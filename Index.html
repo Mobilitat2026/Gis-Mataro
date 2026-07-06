@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+<meta
+  name="apple-mobile-web-app-capable"
+  content="yes">
+
+<title>GIS Mataró - Visor</title>
+
+<style>
+
+*{
+  box-sizing:border-box;
+}
+
+html,
+body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+
+  font-family:Arial,sans-serif;
+
+  background:#fff;
+}
+
+/* ========================= */
+/* VIEWER */
+/* ========================= */
+
+#viewer{
+  width:100%;
+  height:100vh;
+  height:100dvh;
+
+  transition:opacity .25s ease;
+}
+
+#viewer iframe{
+  width:100%;
+  height:100%;
+  border:none;
+}
+
+/* ========================= */
+/* HEADER */
+/* ========================= */
+
+.header{
+
+  position:absolute;
+
+  top:12px;
+  right:12px;
+
+  z-index:9999;
+
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  padding:10px 14px;
+
+  background:#fff;
+
+  border-radius:14px;
+
+  box-shadow:0 4px 16px rgba(0,0,0,.12);
+
+  cursor:pointer;
+}
+
+.header img{
+  height:32px;
+}
+
+.header span{
+  font-size:14px;
+  font-weight:bold;
+}
+
+/* ========================= */
+/* PANEL */
+/* ========================= */
+
+.panel{
+
+  position:absolute;
+
+  bottom:20px;
+  right:20px;
+
+  width:260px;
+
+  max-height:80vh;
+
+  overflow:auto;
+
+  padding:10px;
+
+  background:#fff;
+
+  border-radius:14px;
+
+  box-shadow:0 8px 20px rgba(0,0,0,.18);
+
+  z-index:9999;
+
+  transition:transform .3s ease;
+}
+
+.panel button{
+
+  width:100%;
+
+  margin-top:6px;
+
+  padding:10px;
+
+  border:none;
+  border-radius:10px;
+
+  background:#f4f4f4;
+
+  font-size:13px;
+  font-weight:600;
+
+  display:flex;
+  align-items:center;
+  gap:6px;
+
+  cursor:pointer;
+}
+
+.panel button:active{
+  transform:scale(.98);
+}
+
+/* ========================= */
+/* STATUS */
+/* ========================= */
+
+#status{
+
+  margin-top:10px;
+
+  font-size:12px;
+
+  color:#666;
+
+  text-align:center;
+}
+
+/* ========================= */
+/* BOTÓN MOBILE */
+/* ========================= */
+
+.toggleMenu{
+  display:none;
+}
+
+/* ========================= */
+/* MOBILE */
+/* ========================= */
+
+@media(max-width:768px){
+
+  .toggleMenu{
+
+    display:block;
+
+    position:absolute;
+
+    left:50%;
+    bottom:14px;
+
+    transform:translateX(-50%);
+
+    padding:14px 22px;
+
+    border:none;
+    border-radius:30px;
+
+    background:#222;
+
+    color:#fff;
+
+    font-weight:bold;
+
+    z-index:10001;
+  }
+
+  .panel{
+
+    left:50%;
+
+    right:auto;
+
+    bottom:74px;
+
+    width:240px;
+
+    max-width:90vw;
+
+    transform:translate(-50%,120%);
+  }
+
+  .panel.open{
+    transform:translate(-50%,0);
+  }
+
+  .panel button{
+    font-size:14px;
+    padding:12px;
+  }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- HEADER -->
+
+<div
+  class="header"
+  onclick="loadGoogle()">
+
+  <img
+    src="https://mapes.mataro.cat/extern/mobilitat/Logo-Mataro.jpg">
+
+  <span>
+    Ajuntament de Mataró
+  </span>
+
+</div>
+
+<!-- VIEWER -->
+
+<div id="viewer"></div>
+
+<!-- BOTÓN MENU -->
+
+<button
+  class="toggleMenu"
+  onclick="togglePanel()">
+
+  ☰ Mapes
+
+</button>
+
+<!-- PANEL -->
+
+<div class="panel">
+
+  <button onclick="loadMapa1()">
+    🟦 CID + DUMS
+  </button>
+
+  <button onclick="loadMapa5()">
+    🏍 MOTOS
+  </button>
+
+  <button onclick="loadMapa6()">
+    ♿ PMR Places Mobilitat Reduïda
+  </button>
+
+  <button onclick="loadMapa7()">
+    🚲 BICIS Places Bicicletes
+  </button>
+
+  <button onclick="loadMapa3()">
+    🌁 Geovisor Mobilitat
+  </button>
+
+  <button onclick="loadMapa2()">
+    🟩 CENTRE MATARÓ
+  </button>
+
+  <button onclick="loadMapa4()">
+    📍 Senyalització Horitzontal i Vertical
+  </button>
+
+  <button onclick="loadGoogle()">
+    🌍 Google Maps
+  </button>
+
+  <button onclick="descargar()">
+    ⬇ Descàrregar Plànol Marques Vials
+  </button>
+
+  <div id="status">
+    Listo
+  </div>
+
+</div>
+
+<script>
+
+/* ========================= */
+/* VARIABLES */
+/* ========================= */
+
+const viewer =
+  document.getElementById("viewer");
+
+const panel =
+  document.querySelector(".panel");
+
+/* ========================= */
+/* DETECTAR iPHONE/iPAD */
+/* ========================= */
+
+const isiOS =
+
+  /iPad|iPhone|iPod/.test(navigator.userAgent)
+
+  ||
+
+  (
+    navigator.platform === "MacIntel"
+    &&
+    navigator.maxTouchPoints > 1
+  );
+
+/* ========================= */
+/* STATUS */
+/* ========================= */
+
+function setStatus(msg){
+
+  document.getElementById("status").innerText = msg;
+}
+
+/* ========================= */
+/* TOGGLE PANEL */
+/* ========================= */
+
+function togglePanel(){
+
+  panel.classList.toggle("open");
+}
+
+/* ========================= */
+/* IFRAME */
+/* ========================= */
+
+function createIframe(url){
+
+  return `
+    <iframe
+      src="${url}"
+      allowfullscreen
+      loading="lazy">
+    </iframe>
+  `;
+}
+
+/* ========================= */
+/* CAMBIO MAPA */
+/* ========================= */
+
+function changeMap(html){
+
+  viewer.style.opacity = 0;
+
+  setTimeout(()=>{
+
+    viewer.innerHTML = html;
+
+    viewer.style.opacity = 1;
+
+    panel.classList.remove("open");
+
+  },150);
+}
+
+/* ========================= */
+/* OPEN MAP */
+/* ========================= */
+
+function openMap(embedUrl, externalUrl){
+
+  /* iPHONE / WHATSAPP */
+
+  if(isiOS){
+
+    location.href = externalUrl;
+
+    return;
+  }
+
+  /* DESKTOP / ANDROID */
+
+  changeMap(
+    createIframe(embedUrl)
+  );
+}
+
+/* ========================= */
+/* MAPAS */
+/* ========================= */
+
+function loadMapa1(){
+
+  setStatus("Carregant CID + DUMS...");
+
+  openMap(
+
+    "https://www.google.com/maps/d/u/0/embed?mid=1zM4rmC4JQNQYcpBAhQf-LLn-_XoujPA",
+
+    "https://www.google.com/maps/d/u/0/viewer?mid=1zM4rmC4JQNQYcpBAhQf-LLn-_XoujPA"
+  );
+}
+
+function loadMapa2(){
+
+  setStatus("Carregant Centre Mataró...");
+
+  openMap(
+
+    
+    "https://www.google.com/maps/d/u/0/embed?mid=1acGs6r3k5J1bHT98cP5rvrNyQT6tHeQ",
+
+    "https://www.google.com/maps/d/u/0/viewer?mid=1acGs6r3k5J1bHT98cP5rvrNyQT6tHeQ"
+  );
+}
+
+function loadMapa3(){
+
+  setStatus("Obrint Geovisor...");
+
+  const url =
+     
+
+    "https://serveisweb.mataro.cat/GeoMat/visor/?perfil=Geovisor_Mobilitat";
+
+  if(isiOS){
+
+    location.href = url;
+
+    return;
+  }
+
+  changeMap(
+    createIframe(url)
+  );
+}
+
+function loadMapa4(){
+
+  setStatus("Obrint Autodesk Viewer...");
+
+  const url =
+    "https://autode.sk/4eqaLqw";
+
+  if(isiOS){
+
+    location.href = url;
+
+    return;
+  }
+
+  changeMap(`
+
+    <div style="
+      width:100%;
+      height:100%;
+
+      display:flex;
+
+      align-items:center;
+      justify-content:center;
+    ">
+
+      <a
+        href="${url}"
+        target="_blank"
+
+        style="
+          padding:18px 24px;
+
+          background:#222;
+
+          color:#fff;
+
+          text-decoration:none;
+
+          border-radius:12px;
+
+          font-weight:bold;
+        ">
+
+        Obrir mapa
+
+      </a>
+
+    </div>
+
+  `);
+}
+
+function loadMapa5(){
+
+  setStatus("Carregant MOTOS...");
+
+  openMap(
+
+    "https://www.google.com/maps/d/u/0/embed?mid=1W-8J3_17tioszBat56fHGp6H4QT5shc&z=15",
+
+    "https://www.google.com/maps/d/u/0/viewer?mid=1W-8J3_17tioszBat56fHGp6H4QT5shc&z=15"
+  );
+}
+
+function loadMapa6(){
+
+  setStatus("Carregant PMR...");
+
+  openMap(
+
+    "https://www.google.com/maps/d/u/0/embed?mid=1yolGyjCoHmvDaRt9FC7hXyrva37xZjY&z=15",
+
+    "https://www.google.com/maps/d/u/0/viewer?mid=1yolGyjCoHmvDaRt9FC7hXyrva37xZjY&z=15"
+  );
+}
+
+function loadMapa7(){
+
+  setStatus("Carregant BICIS...");
+
+  openMap(
+
+    "https://www.google.com/maps/d/u/0/embed?mid=1S08OPkj1OmXBA6SqzqYtsIcArnL3RUw&z=15",
+
+    "https://www.google.com/maps/d/u/0/viewer?mid=1S08OPkj1OmXBA6SqzqYtsIcArnL3RUw&z=15"
+  );
+}
+
+/* ========================= */
+/* GOOGLE MAPS */
+/* ========================= */
+
+function loadGoogle(){
+
+  setStatus("Obrint Google Maps...");
+
+  const url =
+    "https://www.google.com/maps/search/?api=1&query=Mataró";
+
+  if(isiOS){
+
+    location.href = url;
+
+    return;
+  }
+
+  changeMap(
+
+    createIframe(
+      "https://maps.google.com/maps?q=Mataro&z=14&output=embed"
+    )
+  );
+}
+
+/* ========================= */
+/* DESCARGAR PDF */
+/* ========================= */
+
+function descargar(){
+
+  setStatus("Obrint plànol...");
+
+  window.open(
+    "DETALLS1.PDF",
+    "_blank"
+  );
+
+  panel.classList.remove("open");
+}
+
+/* ========================= */
+/* INICIO */
+/* ========================= */
+
+window.addEventListener("DOMContentLoaded",()=>{
+
+  if(!isiOS){
+
+    loadGoogle();
+
+  }else{
+
+    viewer.innerHTML = `
+
+      <div style="
+        width:100%;
+        height:100%;
+
+        display:flex;
+
+        align-items:center;
+        justify-content:center;
+
+        text-align:center;
+
+        padding:20px;
+
+        color:#444;
+      ">
+
+        Selecciona un mapa desde el menú ☰
+
+      </div>
+    `;
+  }
+});
+
+</script>
+
+</body>
+</html>

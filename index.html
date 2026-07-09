@@ -550,26 +550,22 @@ function loadMapa7(){
 /* GOOGLE MAPS */
 /* ========================= */
 
-function loadGoogle(){
+function loadGoogle() {
 
   setStatus("Obrint Google Maps...");
 
-  const url =
-    "https://www.google.com/maps/search/?api=1&query=Mataró";
+  changeMap(`
+    <iframe
+      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d23889.20963347313!2d2.4305!3d41.5381!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x12a4b51d7d3e6b35%3A0x40887fae1455d40!2sMataró!5e0!3m2!1ses!2ses!4v1752080000000"
+      width="100%"
+      height="100%"
+      style="border:0"
+      allowfullscreen
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+  `);
 
-  if(isiOS){
-
-    location.href = url;
-
-    return;
-  }
-
-  changeMap(
-
-    createIframe(
-      "https://maps.google.com/maps?q=Mataro&z=14&output=embed"
-    )
-  );
 }
 
 /* ========================= */
@@ -592,37 +588,10 @@ function descargar(){
 /* INICIO */
 /* ========================= */
 
-window.addEventListener("DOMContentLoaded",()=>{
+window.addEventListener("DOMContentLoaded", () => {
 
-  if(!isiOS){
+  loadGoogle();
 
-    loadGoogle();
-
-  }else{
-
-    viewer.innerHTML = `
-
-      <div style="
-        width:100%;
-        height:100%;
-
-        display:flex;
-
-        align-items:center;
-        justify-content:center;
-
-        text-align:center;
-
-        padding:20px;
-
-        color:#444;
-      ">
-
-        Selecciona un mapa desde el menú ☰
-
-      </div>
-    `;
-  }
 });
 
 </script>

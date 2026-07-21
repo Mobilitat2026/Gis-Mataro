@@ -279,6 +279,14 @@ body{
     🚲 BICIS Places Bicicletes
   </button>
 
+   <button onclick="descargar1()">
+    -- BUS URBÀ Línies del Mataró BUS
+   </button>
+  
+   <button onclick="descargar2()">
+    -- BUS INTERURBÀ Línies del Mataró INTERURBÀ
+   </button>
+
   <button onclick="loadMapa3()">
     🌁 Geovisor Mobilitat
   </button>
@@ -569,12 +577,12 @@ function loadGoogle() {
 }
 
 /* ========================= */
-/* DESCARGAR PDF */
+/* DESCARGAR PLÀNOLS SENYALITZACIO PDF */
 /* ========================= */
 
 function descargar(){
 
-  setStatus("Obrint plànol...");
+  setStatus("Obrint plànol detalls...");
 
   window.open(
     "DETALLS1.PDF",
@@ -584,6 +592,35 @@ function descargar(){
   panel.classList.remove("open");
 }
 
+/* ========================= */
+/* DESCARGAR MATARO BÚS PDF */
+/* ========================= */
+
+function descargar1(){
+
+  setStatus("Obrint plànol Mataró BUS...");
+
+  window.open(
+    "MATARO-BUS-2026.pdf",
+    "_blank"
+  );
+
+  panel.classList.remove("open");
+}
+
+function descargar2(){
+
+  setStatus("Obrint plànol BUS INTERURBÀ ...");
+
+  window.open(
+    "MAPA AUTOBUS INTERURBANS 2025.pdf",
+    "_blank"
+  );
+
+  panel.classList.remove("open");
+}
+
+  
 /* ========================= */
 /* INICIO */
 /* ========================= */

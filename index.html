@@ -231,6 +231,45 @@ body{
 
 </style>
 
+/* ========================= */
+/* PWA EN MOVIL */
+/* ========================= */
+
+@media (max-width:768px){
+
+  @media (display-mode: standalone){
+
+    .toggleMenu{
+      font-size:16px;
+      padding:14px 24px;
+    }
+
+    .panel{
+      width:280px;
+    }
+
+    .panel button{
+      font-size:15px;
+      padding:14px;
+    }
+
+    .header{
+      padding:10px 14px;
+    }
+
+    .header img{
+      height:34px;
+    }
+
+    .header span{
+      font-size:15px;
+    }
+
+  }
+
+}
+
+
 </head>
 
 <body>
@@ -632,10 +671,12 @@ function descargar2(){
 
 window.addEventListener("DOMContentLoaded", () => {
 
+  panel.classList.remove("open");
+
   loadGoogle();
 
 });
-
+  
 </script>
 
 </body>

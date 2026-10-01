@@ -493,20 +493,11 @@ function loadMapa3(){
   setStatus("Obrint Geovisor...");
 
   const url =
-     
-
     "https://serveisweb.mataro.cat/GeoMat/visor/?perfil=Geovisor_Mobilitat";
 
-  if(isiOS){
+  window.open(url, "_blank");
 
-    location.href = url;
-
-    return;
-  }
-
-  changeMap(
-    createIframe(url)
-  );
+  panel.classList.remove("open");
 }
 
 function loadMapa4(){
